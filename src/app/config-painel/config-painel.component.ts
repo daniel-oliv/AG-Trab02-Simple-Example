@@ -391,7 +391,7 @@ export class ConfigPainelComponent implements OnInit {
   {
     /// fitness was set as -f+c, since -f grows when f is minimized
     //return - this.functionToAnalise(realNumber) + 400;
-    return - this.functionToAnalise(realNumber) + 500;
+    return - this.functionToAnalise(realNumber);
   }
 
   functionToAnalise(x: number){
