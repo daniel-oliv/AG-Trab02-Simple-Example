@@ -15,6 +15,7 @@ export class ConfigPainelComponent implements OnInit {
   maxNumOfGenerations: number;
   bestInd: individual[];
   numOfBestToKeep:number;
+  numCurrentGeneration: number;
 
   graphData: any;
 
@@ -31,6 +32,7 @@ export class ConfigPainelComponent implements OnInit {
     this.maxNumOfGenerations = 70;
     this.bestInd = [];
     this.numOfBestToKeep = 5;
+    this.numCurrentGeneration = 0;
 
 
     let xValues = this.getIntervalLabels();
@@ -63,10 +65,18 @@ export class ConfigPainelComponent implements OnInit {
     let generations: any = [];
     let initialPopulation = this.selectInitialPopulation();
     let currentGeneration = initialPopulation;
-    generations.push(initialPopulation);
+    currentGeneration = this.getAscendingFitnessPopulation(initialPopulation);
+    generations.push(currentGeneration);
     while(generations.length <= this.maxNumOfGenerations)
     {
-      currentGeneration = this.getAscendingFitnessPopulation(currentGeneration);
+      this.numCurrentGeneration++;
+      //console.log(this.numCurrentGeneration);
+
+      ///this is not need since we are ordering in the end of the "for"
+      //currentGeneration = this.getAscendingFitnessPopulation(currentGeneration);
+      
+      //console.log(currentGeneration);
+      
       let sumFits:number = this.calcSumFits(currentGeneration);
       let pi = this.calcPIs(currentGeneration, sumFits);
       let ci = this.calcCumulativeProb(pi);
@@ -76,10 +86,14 @@ export class ConfigPainelComponent implements OnInit {
       this.applyMutation(nextGeneration);
       
       //console.log(nextGeneration);
+
+      ///for keeping ordered lists
+      nextGeneration = this.getAscendingFitnessPopulation(nextGeneration);
       
       generations.push(nextGeneration);
-      //currentGeneration = nextGeneration;
+      currentGeneration = nextGeneration;
     }
+    console.log(generations);
 
   }
 
@@ -305,7 +319,12 @@ export class ConfigPainelComponent implements OnInit {
     for(let i = 0; i < this.bestInd.length && i < this.numOfBestToKeep; i++)
     {
       insertedInd = false;
-      if(indiv.fitness > this.bestInd[i].fitness)
+      if(this.hasIndividual(indiv))
+      {
+        //console.log("Already in the best");
+        insertedInd = true;
+      }
+      else if(indiv.fitness > this.bestInd[i].fitness)
       {
         insertedInd = true;
         if(this.bestInd.length == this.numOfBestToKeep)// if it is full, removes one to insert
@@ -328,6 +347,15 @@ export class ConfigPainelComponent implements OnInit {
       console.log("bestInd");
       console.log(this.bestInd);
     }
+  }
+
+  hasIndividual(indiv: individual)
+  {
+    let containsInd = false;
+    this.bestInd.forEach(element => {
+      if(element.realNumber == indiv.realNumber) containsInd=true;
+    });
+    return containsInd;
   }
 
   getRandomChromosome(resolution: number)
