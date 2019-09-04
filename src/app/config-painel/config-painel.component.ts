@@ -16,6 +16,7 @@ export class ConfigPainelComponent implements OnInit {
   bestInd: individual[];
   numOfBestToKeep:number;
   numCurrentGeneration: number;
+  generations: any;
 
   graphData: any;
 
@@ -33,6 +34,7 @@ export class ConfigPainelComponent implements OnInit {
     this.bestInd = [];
     this.numOfBestToKeep = 5;
     this.numCurrentGeneration = 0;
+    this.generations = [];
 
 
     let xValues = this.getIntervalLabels();
@@ -62,12 +64,16 @@ export class ConfigPainelComponent implements OnInit {
   findMinimun()
   {
     console.log("findMinimun");
-    let generations: any = [];
+    ///restarting the variables
+    this.generations = [];
+    this.bestInd = [];
+    this.numCurrentGeneration = 0;
+
     let initialPopulation = this.selectInitialPopulation();
     let currentGeneration = initialPopulation;
     currentGeneration = this.getAscendingFitnessPopulation(initialPopulation);
-    generations.push(currentGeneration);
-    while(generations.length <= this.maxNumOfGenerations)
+    this.generations.push(currentGeneration);
+    while(this.generations.length <= this.maxNumOfGenerations)
     {
       this.numCurrentGeneration++;
       //console.log(this.numCurrentGeneration);
@@ -90,10 +96,10 @@ export class ConfigPainelComponent implements OnInit {
       ///for keeping ordered lists
       nextGeneration = this.getAscendingFitnessPopulation(nextGeneration);
       
-      generations.push(nextGeneration);
+      this.generations.push(nextGeneration);
       currentGeneration = nextGeneration;
     }
-    console.log(generations);
+    console.log(this.generations);
 
   }
 
@@ -323,10 +329,12 @@ export class ConfigPainelComponent implements OnInit {
       {
         //console.log("Already in the best");
         insertedInd = true;
+        return;
       }
       else if(indiv.fitness > this.bestInd[i].fitness)
       {
         insertedInd = true;
+        //indiv.generation = this.numCurrentGeneration;
         if(this.bestInd.length == this.numOfBestToKeep)// if it is full, removes one to insert
           this.bestInd.splice(i, 1, indiv);
         else
@@ -339,11 +347,13 @@ export class ConfigPainelComponent implements OnInit {
     if(!insertedInd && this.bestInd.length < this.numOfBestToKeep)/// if it was not inserted and there is space
     {
       insertedInd = true;
+      //indiv.generation = this.numCurrentGeneration;
       this.bestInd.push(indiv);
     }
 
     if(insertedInd)
     {
+      indiv.generation = this.numCurrentGeneration;
       console.log("bestInd");
       console.log(this.bestInd);
     }
@@ -373,7 +383,7 @@ export class ConfigPainelComponent implements OnInit {
   {
     /// fitness was set as -f+c, since -f grows when f is minimized
     //return - this.functionToAnalise(realNumber) + 400;
-    return - this.functionToAnalise(realNumber)+1000;
+    return - this.functionToAnalise(realNumber) + 500;
   }
 
   functionToAnalise(x: number){
@@ -401,6 +411,14 @@ export class ConfigPainelComponent implements OnInit {
     return Math.pow(2, this.resolution);
   }
 
+  calcFitnessAverage(generation: individual[]): number
+  {
+    let averageFit:number = 0;
+    generation.forEach((element) => {averageFit+=element.fitness});
+    averageFit/=generation.length;
+    return averageFit;
+  }
+
   /////////////////////
 
 }
@@ -409,4 +427,5 @@ interface  individual{
   chromosome: number[];
   realNumber?: number;
   fitness?:number;
+  generation?:number;
 }

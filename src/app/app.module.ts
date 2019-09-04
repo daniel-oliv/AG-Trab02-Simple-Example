@@ -8,6 +8,7 @@ import { AppComponent } from './app.component';
 import { ConfigPainelComponent } from './config-painel/config-painel.component';
 import { SliderModule } from 'primeng/slider';
 import {ChartModule} from 'primeng/chart';
+import {TableModule} from 'primeng/table';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import {ChartModule} from 'primeng/chart';
     FormsModule,
     SliderModule,
     BrowserAnimationsModule,
-    ChartModule
+    ChartModule,
+    TableModule
   ],
   providers: [],
   bootstrap: [AppComponent]
