@@ -1,0 +1,30 @@
+<div class="rootTag">
+    <div class="slidersContent" >
+            <h4>Probabilidade de Cruzamento: {{probCruzamento|number:'1.2-5'}}</h4>
+            <p-slider class="slider" [(ngModel)]="probCruzamento" 
+            [step]="0.01" [min]="0" [max]="1" 
+            [animate]="true" ></p-slider>
+            
+            <h4>Probabilidade de Mutação: {{probMutacao|number:'1.2-5'}}</h4>
+            <p-slider class="slider" [(ngModel)]="probMutacao" 
+            [step]="0.01" [min]="0" [max]="1"
+            [animate]="true" ></p-slider>
+            <h4>Função:</h4>
+
+            <h4>Resolução: {{resolution}}</h4>
+            <p-slider class="slider" [(ngModel)]="resolution" 
+            [step]="1" [min]="5" [max]="20" 
+            [animate]="true" ></p-slider>
+            
+            <br><br><br>
+
+            <button class="btn btn-primary" (click)="findMinimun()">Encontrar mínimo</button>
+
+    </div>
+</div>
+
+<div class="chartDiv">
+    <p-chart type="line" [data]="graphData" width="80vw" height="80vh"></p-chart>
+</div>
+
+
