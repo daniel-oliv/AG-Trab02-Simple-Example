@@ -37,10 +37,18 @@ export class ConfigPainelComponent implements OnInit {
     this.generations = [];
 
 
+    this.drawFunction();
+
+    
+  }
+
+  drawFunction()
+  {
+    console.log("drawFunction");
     let xValues = this.getIntervalLabels();
     //console.log(xValues);
-
-    this.graphData = {
+    this.graphData = 
+    {
       labels: xValues,
       datasets: [
           {
@@ -50,13 +58,13 @@ export class ConfigPainelComponent implements OnInit {
               pointHoverRadius: 0,
               fill: false,
              // showLine: false // no line shown
-          },
+          }
           /*{
               label: 'Second Dataset',
               data: [28, 48, 40, 19, 86, 27, 90]
           }*/
       ]
-  }
+    }
   }
 
   /////////////////////
@@ -99,7 +107,7 @@ export class ConfigPainelComponent implements OnInit {
       this.generations.push(nextGeneration);
       currentGeneration = nextGeneration;
     }
-    console.log(this.generations);
+    //console.log(this.generations);
 
   }
 
@@ -354,8 +362,8 @@ export class ConfigPainelComponent implements OnInit {
     if(insertedInd)
     {
       indiv.generation = this.numCurrentGeneration;
-      console.log("bestInd");
-      console.log(this.bestInd);
+      //console.log("bestInd");
+      //console.log(this.bestInd);
     }
   }
 
