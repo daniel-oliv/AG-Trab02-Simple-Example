@@ -27,6 +27,8 @@ export class ConfigPainelComponent implements OnInit {
   colors: string [];
   color: number;
   isGraphResponsive: boolean;
+  showGraph1: string;
+  showGraph2: string;
 
   constructor() { }
 
@@ -44,6 +46,8 @@ export class ConfigPainelComponent implements OnInit {
     this.numCurrentGeneration = 0;
     this.generations = [];
     this.isGraphResponsive = true;
+    this.showGraph1 = 'block';
+    this.showGraph2 = 'none';
     this.initGensDataset();
     this.drawFunction();
 
@@ -86,6 +90,7 @@ export class ConfigPainelComponent implements OnInit {
     console.log(datasets);
     this.graphData = 
     {
+      animationEnabled: false,  //change to false
       labels: this.xValues,
       datasets
     }
