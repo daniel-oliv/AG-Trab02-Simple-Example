@@ -51,7 +51,7 @@
 	<p-accordionTab header="Function Graph" [selected]="true">
 		<h2 class="rootTag container">Function Graph</h2>
 		<div class="chartDiv">
-			<p-chart type="line" [data]="graphData" width="95vw" height="80vh"></p-chart>
+			<p-chart type="line" [data]="graphData" [responsive]="isGraphResponsive" width="95vw" height="80vh"></p-chart>
 		</div>
 	</p-accordionTab>
 	<p-accordionTab header="Tabelas">

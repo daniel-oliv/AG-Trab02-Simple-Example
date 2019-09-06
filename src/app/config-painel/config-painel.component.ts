@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ɵConsole } from '@angular/core';
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
+import { element } from 'protractor';
 
 @Component({
   selector: 'app-config-painel',
@@ -16,9 +18,15 @@ export class ConfigPainelComponent implements OnInit {
   bestInd: individual[];
   numOfBestToKeep:number;
   numCurrentGeneration: number;
-  generations: any;
+  generations: any[];
 
   graphData: any;
+  functionDataSet: any;
+  generationsDataSets: any[];
+  xValues: number[];
+  colors: string [];
+  color: number;
+  isGraphResponsive: boolean;
 
   constructor() { }
 
@@ -35,36 +43,87 @@ export class ConfigPainelComponent implements OnInit {
     this.numOfBestToKeep = 5;
     this.numCurrentGeneration = 0;
     this.generations = [];
-
-
+    this.isGraphResponsive = true;
+    this.initGensDataset();
     this.drawFunction();
 
     
   }
 
-  drawFunction()
+  initGensDataset()
+  {
+    this.xValues = this.getIntervalLabels();
+    this.generationsDataSets = [];
+    this.color = 0;
+    this.colors = [];
+  }
+
+  getColorStr()
+  {
+    return "#"+this.color.toString(16).toLocaleUpperCase().padStart(6,"0");
+  }
+
+  drawFunction(aditionalDatasets: any [] = [])
   {
     console.log("drawFunction");
-    let xValues = this.getIntervalLabels();
+    console.log(aditionalDatasets);
+    this.xValues = this.getIntervalLabels();
+    this.functionDataSet =  
+    {
+      label: 'Fuction f(x)',
+      data: this.xValues.map(this.functionToAnalise),
+      backgroundColor: "#000000",
+      borderColor: "#000000",
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      fill: false,
+     // showLine: false // no line shown
+    }
+    let datasets:any[] = [];
+    datasets.push(this.functionDataSet);
+    datasets = datasets.concat(aditionalDatasets);
     //console.log(xValues);
+    console.log(datasets);
     this.graphData = 
     {
-      labels: xValues,
-      datasets: [
-          {
-              label: 'Fuction f(x)',
-              data: xValues.map(this.functionToAnalise),
-              pointRadius: 0,
-              pointHoverRadius: 0,
-              fill: false,
-             // showLine: false // no line shown
-          }
-          /*{
-              label: 'Second Dataset',
-              data: [28, 48, 40, 19, 86, 27, 90]
-          }*/
-      ]
+      labels: this.xValues,
+      datasets
     }
+  }
+
+  getDataSetGeneration(generations: individual[][])
+  {
+    let gensDataset:any[] = [];
+    //console.log(generation);
+    for(let i = 0; i < generations.length; i++)
+    {
+      let data = [];
+      
+      data.fill(null, 0, this.populationSize);
+      for(let indiv of generations[i])
+      {
+        //console.log("getDataSetGeneration")
+        //console.log(indiv);
+        let indivIndex = this.xValues.indexOf(indiv.realNumber);
+        data[indivIndex] = this.functionDataSet.data[indivIndex];
+      }
+
+      let genDataset = {
+        label: "Geração " + i,
+        data,
+        backgroundColor: undefined,
+        borderColor: "#FF0000",
+        fill: false,
+        borderDash: [5, 5],
+        pointRadius: 15,
+        pointHoverRadius: 10
+      };
+
+      gensDataset.push(genDataset);
+    }
+    
+    
+    return gensDataset;
   }
 
   /////////////////////
@@ -72,7 +131,11 @@ export class ConfigPainelComponent implements OnInit {
   findMinimun()
   {
     console.log("findMinimun");
+    
     ///restarting the variables
+
+    this.initGensDataset();
+
     this.generations = [];
     this.bestInd = [];
     this.numCurrentGeneration = 0;
@@ -107,6 +170,17 @@ export class ConfigPainelComponent implements OnInit {
       this.generations.push(nextGeneration);
       currentGeneration = nextGeneration;
     }
+    this.generationsDataSets = this.getDataSetGeneration(this.generations);
+    for(let i = 0; i < this.generations.length; i++)
+    { 
+      setTimeout
+      (()=>{
+        this.drawFunction(this.generationsDataSets.slice(i,i+1));
+      }
+      ,i * 2)
+    }
+    //this.generationsDataSets.push(this.getDataSetGeneration(this.generations[0]));
+    
     //console.log(this.generations);
 
   }
