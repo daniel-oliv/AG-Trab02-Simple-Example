@@ -140,12 +140,12 @@ export class ConfigPainelComponent implements OnInit {
     {
       label: 'Best individual',
       data: generations.map((element) => {return this.bestIndividualFromAscendingPop(element).fitness}),
-      backgroundColor: "#000000",
+      backgroundColor: undefined,
       borderColor: "#000000",
-      pointRadius: 0,
-      pointHoverRadius: 0,
       fill: false,
-     // showLine: false // no line shown
+      pointRadius: 5,
+      pointHoverRadius: 5,
+      //showLine: false // no line shown
     }
     console.log("generations");
     console.log(generations.map((element) => {return this.bestIndividualFromAscendingPop(element).fitness}));
@@ -154,11 +154,11 @@ export class ConfigPainelComponent implements OnInit {
     {
       label: 'Average fitness',
       data: generations.map((element) => {return this.calcFitnessAverage(element)}),
-      backgroundColor: "#0000ff",
+      backgroundColor: "#eeeeff",
       borderColor: "#0000ff",
       pointRadius: 0,
       pointHoverRadius: 0,
-      fill: false,
+      fill: true,
      // showLine: false // no line shown
     }
 
