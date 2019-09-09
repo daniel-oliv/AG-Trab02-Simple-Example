@@ -31,7 +31,13 @@
 				<h6>Limite máximo do intervalo: {{intervalMax}}</h6>
 				<p-slider class="slider" [(ngModel)]="intervalMax" 
 				(onChange)="drawFunction()"
-				[step]="1" [min]="1" [max]="5000"
+				[step]="1" [min]="intervalMin" [max]="1000"
+				[animate]="true" ></p-slider>
+				<br>
+				<h6>Limite mínimo do intervalo: {{intervalMin}}</h6>
+				<p-slider class="slider" [(ngModel)]="intervalMin" 
+				(onChange)="drawFunction()"
+				[step]="1" [min]="-1000" [max]="intervalMax"
 				[animate]="true" ></p-slider>
 				<br>
 				<h6>Número de gerações: {{maxNumOfGenerations}}</h6>

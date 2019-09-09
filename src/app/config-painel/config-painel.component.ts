@@ -14,6 +14,8 @@ export class ConfigPainelComponent implements OnInit {
   resolution: number;
   populationSize: number;
   intervalMax: number;
+  intervalMin: number;
+  minFunctionInTheInterval: number;
   maxNumOfGenerations: number;
   bestInd: individual[];
   numOfBestToKeep:number;
@@ -28,6 +30,7 @@ export class ConfigPainelComponent implements OnInit {
   functionDataSet: any;
   generationsDataSets: any[];
   xRealValues: number[];
+  yRealValues: number[];
   colors: string [];
   color: number;
   isGraphResponsive: boolean;
@@ -46,6 +49,7 @@ export class ConfigPainelComponent implements OnInit {
     this.resolution = 10;
     this.populationSize = 50;
     this.intervalMax = 512;
+    this.intervalMin = 0;
     this.maxNumOfGenerations = 70;
     this.bestInd = [];
     this.numOfBestToKeep = 5;
@@ -84,10 +88,31 @@ export class ConfigPainelComponent implements OnInit {
 
   initGensDataset()
   {
-    this.xRealValues = this.getIntervalLabels();
+    console.log("initGensDataset")
+    this.initIntervalData();
     this.generationsDataSets = [];
     this.color = 0;
     this.colors = [];
+  }
+
+  initIntervalData()
+  {
+    console.log("initIntervalData")
+    this.xRealValues = this.getIntervalLabels();
+    this.yRealValues = this.xRealValues.map(this.functionToAnalise);
+    this.minFunctionInTheInterval = this.minArray(this.yRealValues);
+    console.log("minFunctionInTheInterval" + this.minFunctionInTheInterval);
+
+  }
+
+  minArray(arr: number[])
+  {
+    let minValue = arr[0];
+    for (let index = 1; index < arr.length; index++) 
+    {
+      if(minValue < arr[index]) minValue = arr[index];   
+    }
+    return minValue;
   }
 
   getColorStr()
@@ -99,11 +124,11 @@ export class ConfigPainelComponent implements OnInit {
   {
     //console.log("drawFunction");
     //console.log(aditionalDatasets);
-    this.xRealValues = this.getIntervalLabels();
+    this.initIntervalData();
     this.functionDataSet =  
     {
       label: 'Fuction f(x)',
-      data: this.xRealValues.map(this.functionToAnalise),
+      data: this.yRealValues,
       backgroundColor: "#000000",
       borderColor: "#000000",
       pointRadius: 0,
@@ -635,13 +660,23 @@ export class ConfigPainelComponent implements OnInit {
 
   calcFitness(realNumber:number)
   {
+    ///trab 02 funcion
     /// fitness was set as -f+c, since -f grows when f is minimized
     //return - this.functionToAnalise(realNumber) + 400;
-    return - this.functionToAnalise(realNumber);
+    //return - this.functionToAnalise(realNumber);
+
+    ///trab 03 funcion
+    return this.functionToAnalise(realNumber) + this.minFunctionInTheInterval;
   }
 
-  functionToAnalise(x: number){
-    return - Math.abs(x * Math.sin(Math.sqrt(Math.abs(x)) ));
+  functionToAnalise(x: number): number
+  {
+    ///trab 02 funcion
+    //return - Math.abs(x * Math.sin(Math.sqrt(Math.abs(x)) ));
+
+    ///trab 03 funcion
+    ///to graph calculator - x * sin(x^4) + cos(x^2)
+    return x * Math.sin(Math.pow(x, 4)) + Math.cos(Math.pow(x, 2));
   }
 
   binArrayToDecimal(bits: number[]){
@@ -654,7 +689,7 @@ export class ConfigPainelComponent implements OnInit {
   }
   
   wholeToReal(decimalWhole: number){/// number=1:1024
-    let realNumber = decimalWhole * this.intervalMax/this.getDecimalMax();
+    let realNumber = decimalWhole * (this.intervalMax-this.intervalMin)/this.getDecimalMax() + this.intervalMin;
     
     //console.log("wholeToReal: real " + realNumber + " whole " + decimalWhole);
     return realNumber;
