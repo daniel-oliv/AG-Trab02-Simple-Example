@@ -27,12 +27,14 @@ export class ConfigPainelComponent implements OnInit {
   graphData: any;
   functionDataSet: any;
   generationsDataSets: any[];
-  xValues: number[];
+  xRealValues: number[];
   colors: string [];
   color: number;
   isGraphResponsive: boolean;
   showGraph1: string;
   showGraph2: string;
+  performanceData: any;
+  bestIndividualData: any;
 
   constructor() { }
 
@@ -58,13 +60,31 @@ export class ConfigPainelComponent implements OnInit {
     this.enableElitism = ["elitism"];
     this.numOfIndividualsInTourney = 4;
     this.numOfElitismInd = 2;
+    
+    
+    
 
     
   }
 
+  numOfNewIndividual()
+  {
+    let numOfNewIndividual: number;
+    if(this.enableElitism)
+    {
+      numOfNewIndividual = this.populationSize - this.numOfElitismInd;
+    }
+    else
+    {
+      numOfNewIndividual = this.populationSize;
+    }
+    console.log("numOfElitismInd" + numOfNewIndividual);
+    return numOfNewIndividual;
+  }
+
   initGensDataset()
   {
-    this.xValues = this.getIntervalLabels();
+    this.xRealValues = this.getIntervalLabels();
     this.generationsDataSets = [];
     this.color = 0;
     this.colors = [];
@@ -79,11 +99,11 @@ export class ConfigPainelComponent implements OnInit {
   {
     //console.log("drawFunction");
     //console.log(aditionalDatasets);
-    this.xValues = this.getIntervalLabels();
+    this.xRealValues = this.getIntervalLabels();
     this.functionDataSet =  
     {
       label: 'Fuction f(x)',
-      data: this.xValues.map(this.functionToAnalise),
+      data: this.xRealValues.map(this.functionToAnalise),
       backgroundColor: "#000000",
       borderColor: "#000000",
       pointRadius: 0,
@@ -99,8 +119,66 @@ export class ConfigPainelComponent implements OnInit {
     this.graphData = 
     {
       animationEnabled: false,  //change to false
-      labels: this.xValues,
+      labels: this.xRealValues,
       datasets
+    }
+  }
+
+  plotPerformanceGraph(generations: individual[][])
+  {
+    ///filling a vector with the generation numbers
+    console.log("plotPerformanceGraph");
+    let xValues = [];
+    for (let i = 0; i <= this.maxNumOfGenerations; i++) {
+      xValues.push(i);
+    }
+    console.log("xValues");
+    console.log(xValues);
+    ///filling data (y values - best individuals fitness and average for every generation)
+    let datasets:any[] = [];
+    let bestIndividualFitnessDataset =  
+    {
+      label: 'Best individual',
+      data: generations.map((element) => {return this.bestIndividualFromAscendingPop(element).fitness}),
+      backgroundColor: "#000000",
+      borderColor: "#000000",
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      fill: false,
+     // showLine: false // no line shown
+    }
+    console.log("generations");
+    console.log(generations.map((element) => {return this.bestIndividualFromAscendingPop(element).fitness}));
+
+    let averageFitnessDataset =  
+    {
+      label: 'Average fitness',
+      data: generations.map((element) => {return this.calcFitnessAverage(element)}),
+      backgroundColor: "#0000ff",
+      borderColor: "#0000ff",
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      fill: false,
+     // showLine: false // no line shown
+    }
+
+    ///adding to the datasets graph
+    datasets.push(bestIndividualFitnessDataset);
+    datasets.push(averageFitnessDataset);
+
+    ///updating the variable that were binded to the performance graph data
+    this.performanceData = 
+    {
+      animationEnabled: false,  //change to false
+      labels: xValues,
+      datasets
+    }
+
+    this.bestIndividualData = 
+    {
+      animationEnabled: false,  //change to false
+      labels: xValues,
+      datasets: [bestIndividualFitnessDataset]
     }
   }
 
@@ -117,7 +195,7 @@ export class ConfigPainelComponent implements OnInit {
       {
         //console.log("getDataSetGeneration")
         //console.log(indiv);
-        let indivIndex = this.xValues.indexOf(indiv.realNumber);
+        let indivIndex = this.xRealValues.indexOf(indiv.realNumber);
         data[indivIndex] = this.functionDataSet.data[indivIndex];
       }
 
@@ -166,13 +244,24 @@ export class ConfigPainelComponent implements OnInit {
       //currentGeneration = this.getAscendingFitnessPopulation(currentGeneration);
       
       //console.log(currentGeneration);
-
-      let nextGeneration: individual[] = this.applyCrossover(currentGeneration); 
+      let nextGeneration: individual[] = [];
+      let individualsToKeep: individual[] = [];
+      if(this.enableElitism)
+      {
+        if(this.numCurrentGeneration<2) console.log("enableElitism");
+        individualsToKeep = this.bestIndividualsFromAscendingPop(currentGeneration, this.numOfElitismInd);
+        if(this.numCurrentGeneration<2) console.log(individualsToKeep);
+      }
+     
+      this.applyCrossover(currentGeneration, nextGeneration); 
       
       ///console here will show the final next population, since chrome update the objects in console
       this.applyMutation(nextGeneration);
       
       //console.log(nextGeneration);
+
+      ///concating the best individuals that were kept
+      nextGeneration = nextGeneration.concat(individualsToKeep);
 
       ///for keeping ordered lists
       nextGeneration = this.getAscendingFitnessPopulation(nextGeneration);
@@ -189,6 +278,7 @@ export class ConfigPainelComponent implements OnInit {
       }
       ,i * 2)
     }
+    this.plotPerformanceGraph(this.generations);
     //this.generationsDataSets.push(this.getDataSetGeneration(this.generations[0]));
     
     //console.log(this.generations);
@@ -270,7 +360,7 @@ export class ConfigPainelComponent implements OnInit {
     let sumFits:number = this.calcSumFits(generation);
     let pi = this.calcPIs(generation, sumFits);
     let ci = this.calcCumulativeProb(pi);
-    while(couples.length < this.populationSize)///voltar
+    while(couples.length < this.numOfNewIndividual())///voltar
     {
       let randomNumber = Math.random();
       let selectedIndex = 0;
@@ -289,7 +379,7 @@ export class ConfigPainelComponent implements OnInit {
   {
     let couples: individual[] = [];
     //let teste:number = -2;
-    while(couples.length < this.populationSize)///voltar
+    while(couples.length < this.numOfNewIndividual())///voltar
     {
       ///select ind by random
       let tourneyIndividuals = [];
@@ -322,6 +412,11 @@ export class ConfigPainelComponent implements OnInit {
     return ascendingPopulation[ascendingPopulation.length-1];
   }
 
+  bestIndividualsFromAscendingPop(ascendingPopulation: individual[], numOfIndividuals)
+  {
+    return ascendingPopulation.slice(ascendingPopulation.length - numOfIndividuals, ascendingPopulation.length);
+  }
+
   selectCouples(generation: individual[])
   {
     switch (this.couplesSelectionMode) {
@@ -340,11 +435,9 @@ export class ConfigPainelComponent implements OnInit {
     }
   }
 
-  applyCrossover(previousGeneration: individual[]): individual[]
+  applyCrossover(previousGeneration: individual[], nextGeneration:individual[])
   {
     //console.log("applyCrossover");
-
-    let nextGeneration: individual[] = [];
     let couples = this.selectCouples(previousGeneration);
     for (let index = 0; index < couples.length; index+=2) 
     {
@@ -368,8 +461,6 @@ export class ConfigPainelComponent implements OnInit {
         //console.log(nextGeneration);
       }
     }
-
-    return nextGeneration;
   }
 
   crossIndividuals(couple: individual[]): individual[]
