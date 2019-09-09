@@ -77,8 +77,8 @@ export class ConfigPainelComponent implements OnInit {
 
   drawFunction(aditionalDatasets: any [] = [])
   {
-    console.log("drawFunction");
-    console.log(aditionalDatasets);
+    //console.log("drawFunction");
+    //console.log(aditionalDatasets);
     this.xValues = this.getIntervalLabels();
     this.functionDataSet =  
     {
@@ -95,7 +95,7 @@ export class ConfigPainelComponent implements OnInit {
     datasets.push(this.functionDataSet);
     datasets = datasets.concat(aditionalDatasets);
     //console.log(xValues);
-    console.log(datasets);
+    //console.log(datasets);
     this.graphData = 
     {
       animationEnabled: false,  //change to false
@@ -288,36 +288,53 @@ export class ConfigPainelComponent implements OnInit {
   selectByTourney(generation: individual[]): individual[]
   {
     let couples: individual[] = [];
-    
+    //let teste:number = -2;
     while(couples.length < this.populationSize)///voltar
     {
       ///select ind by random
+      let tourneyIndividuals = [];
       for (let index = 0; index < this.numOfIndividualsInTourney; index++) 
       {
-        let randomNumber = Math.random();
-
+        let randomIndex = Math.floor(Math.random() * this.populationSize);
+        //if(teste < 0 && this.numCurrentGeneration < 2) console.log("selectByTourney randomIndex: " +randomIndex);
+        tourneyIndividuals.push(generation[randomIndex]);
       }
+
       ///select the best in the group
+      tourneyIndividuals = this.getAscendingFitnessPopulation(tourneyIndividuals);
       
+      couples.push(this.bestIndividualFromAscendingPop(tourneyIndividuals));
+
+      /*if(teste < 0 && this.numCurrentGeneration < 2)
+      {
+        teste++;
+        console.log(tourneyIndividuals);
+        console.log(this.bestIndividualFromAscendingPop(tourneyIndividuals));
+      }*/
     }
     
 
     return couples;
   }
 
+  bestIndividualFromAscendingPop(ascendingPopulation: individual[])
+  {
+    return ascendingPopulation[ascendingPopulation.length-1];
+  }
+
   selectCouples(generation: individual[])
   {
     switch (this.couplesSelectionMode) {
       case "Roleta":
-          console.log("selectCouples roleta");
+          //console.log("selectCouples roleta");
           return this.selectByRoulette(generation);
         break;
       case "Torneio":
-          console.log("selectCouples torneio");
+          //console.log("selectCouples torneio");
           return this.selectByTourney(generation);
           break;
       default:
-        console.log("selectCouples default");
+        //console.log("selectCouples default");
         return null;
         break;
     }
@@ -325,15 +342,15 @@ export class ConfigPainelComponent implements OnInit {
 
   applyCrossover(previousGeneration: individual[]): individual[]
   {
-    console.log("applyCrossover");
+    //console.log("applyCrossover");
 
     let nextGeneration: individual[] = [];
     let couples = this.selectCouples(previousGeneration);
     for (let index = 0; index < couples.length; index+=2) 
     {
       let couple: individual[] = couples.slice(index,index + 2);
-      console.log("couple");
-      console.log(couple);
+      //console.log("couple");
+      //console.log(couple);
       if(Math.random() < this.probCruzamento)
       {
         ///cruza
