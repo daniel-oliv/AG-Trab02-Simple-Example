@@ -10,6 +10,8 @@ import { SliderModule } from 'primeng/slider';
 import {ChartModule} from 'primeng/chart';
 import {TableModule} from 'primeng/table';
 import {AccordionModule} from 'primeng/accordion';
+import {RadioButtonModule} from 'primeng/radiobutton';
+import {CheckboxModule} from 'primeng/checkbox';
 
 
 @NgModule({
@@ -24,7 +26,9 @@ import {AccordionModule} from 'primeng/accordion';
     BrowserAnimationsModule,
     ChartModule,
     TableModule,
-    AccordionModule
+    AccordionModule,
+    RadioButtonModule,
+    CheckboxModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -43,7 +43,30 @@
 				<p-slider class="slider" [(ngModel)]="numOfBestToKeep" 
 				[step]="1" [min]="0" [max]="200" 
 				[animate]="true" ></p-slider>
-					
+				
+				<br><br>
+				<h5>Modo de seleção de casais</h5>
+				
+				<p-radioButton label="Roleta" name="groupname" value="Roleta" [(ngModel)]="couplesSelectionMode">Roleta</p-radioButton>
+				<br><br>
+				<p-radioButton label="Torneio" name="groupname" value="Torneio" [(ngModel)]="couplesSelectionMode">Torneio</p-radioButton>
+				<br>
+				<br>
+				<h6>Indivíduos por torneio: {{numOfIndividualsInTourney}}</h6>
+				<p-slider class="slider" [(ngModel)]="numOfIndividualsInTourney" 
+				[step]="1" [min]="1" [max]="populationSize" 
+				[animate]="true" ></p-slider>
+				<br>
+				<br>
+				<br>
+				<p-checkbox label="Habilitar elistismo" name="groupname" value="elitism" [(ngModel)]="enableElitism"></p-checkbox>
+				<br>
+				<br>
+				<h6>Indivíduos preservados por elitismo: {{numOfElitismInd}}</h6>
+				<p-slider class="slider" [(ngModel)]="numOfElitismInd" 
+				[step]="1" [min]="0" [max]="populationSize" 
+				[animate]="true" ></p-slider>
+
 				<br><br><br>            
 			</div>      
 		</div>

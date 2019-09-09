@@ -19,6 +19,10 @@ export class ConfigPainelComponent implements OnInit {
   numOfBestToKeep:number;
   numCurrentGeneration: number;
   generations: any[];
+  couplesSelectionMode: string;
+  enableElitism: string[];
+  numOfIndividualsInTourney: number;
+  numOfElitismInd: number;
 
   graphData: any;
   functionDataSet: any;
@@ -50,6 +54,10 @@ export class ConfigPainelComponent implements OnInit {
     this.showGraph2 = 'none';
     this.initGensDataset();
     this.drawFunction();
+    this.couplesSelectionMode = "Roleta"
+    this.enableElitism = ["elitism"];
+    this.numOfIndividualsInTourney = 4;
+    this.numOfElitismInd = 2;
 
     
   }
@@ -158,11 +166,8 @@ export class ConfigPainelComponent implements OnInit {
       //currentGeneration = this.getAscendingFitnessPopulation(currentGeneration);
       
       //console.log(currentGeneration);
-      
-      let sumFits:number = this.calcSumFits(currentGeneration);
-      let pi = this.calcPIs(currentGeneration, sumFits);
-      let ci = this.calcCumulativeProb(pi);
-      let nextGeneration: individual[] = this.applyCrossover(currentGeneration, ci); 
+
+      let nextGeneration: individual[] = this.applyCrossover(currentGeneration); 
       
       ///console here will show the final next population, since chrome update the objects in console
       this.applyMutation(nextGeneration);
@@ -259,22 +264,76 @@ export class ConfigPainelComponent implements OnInit {
     return cis;
   }
 
-  applyCrossover(previousGeneration: individual[], ci: number[]): individual[]
+  selectByRoulette(generation: individual[]): individual[]
   {
-    //console.log("applyCrossover");
-    let nextGeneration : individual[] = [];
-    while(nextGeneration.length < this.populationSize)///voltar
+    let couples: individual[] = [];
+    let sumFits:number = this.calcSumFits(generation);
+    let pi = this.calcPIs(generation, sumFits);
+    let ci = this.calcCumulativeProb(pi);
+    while(couples.length < this.populationSize)///voltar
     {
-      let couple: individual[] = []; 
+      let randomNumber = Math.random();
+      let selectedIndex = 0;
+      while(randomNumber > ci[selectedIndex])
+      {
+        selectedIndex++;
+      }
+      //console.log("selectByRoulette " + "randomNumber[" + randomNumber + "]" + " selectedIndex[" + selectedIndex + "]"+ " ci[" + ci[selectedIndex] + "]");
+      couples.push(generation[selectedIndex]);
+    }
+
+    return couples;  
+  }
+
+  selectByTourney(generation: individual[]): individual[]
+  {
+    let couples: individual[] = [];
+    
+    while(couples.length < this.populationSize)///voltar
+    {
+      ///select ind by random
+      for (let index = 0; index < this.numOfIndividualsInTourney; index++) 
+      {
+        let randomNumber = Math.random();
+
+      }
+      ///select the best in the group
       
-      let index = this.selectIndividual(ci);
-      couple.push(previousGeneration[index])
-      //console.log("applyCrossover selected idividual index: " + index);
+    }
+    
 
-      index = this.selectIndividual(ci);
-      couple.push(previousGeneration[index])
-      //console.log("applyCrossover selected idividual index: " + index);
+    return couples;
+  }
 
+  selectCouples(generation: individual[])
+  {
+    switch (this.couplesSelectionMode) {
+      case "Roleta":
+          console.log("selectCouples roleta");
+          return this.selectByRoulette(generation);
+        break;
+      case "Torneio":
+          console.log("selectCouples torneio");
+          return this.selectByTourney(generation);
+          break;
+      default:
+        console.log("selectCouples default");
+        return null;
+        break;
+    }
+  }
+
+  applyCrossover(previousGeneration: individual[]): individual[]
+  {
+    console.log("applyCrossover");
+
+    let nextGeneration: individual[] = [];
+    let couples = this.selectCouples(previousGeneration);
+    for (let index = 0; index < couples.length; index+=2) 
+    {
+      let couple: individual[] = couples.slice(index,index + 2);
+      console.log("couple");
+      console.log(couple);
       if(Math.random() < this.probCruzamento)
       {
         ///cruza
