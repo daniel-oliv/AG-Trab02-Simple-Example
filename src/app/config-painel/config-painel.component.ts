@@ -258,9 +258,9 @@ export class ConfigPainelComponent implements OnInit {
 
   /////////////////////
 
-  findMinimun()
+  optimize()
   {
-    console.log("findMinimun");
+    console.log("optimize");
     
     ///restarting the variables
 
