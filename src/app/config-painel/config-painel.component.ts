@@ -16,13 +16,14 @@ export class ConfigPainelComponent implements OnInit {
   intervalMax: number;
   intervalMin: number;
   minFunctionInTheInterval: number;
+  maxFunctionInTheInterval: number;
   maxNumOfGenerations: number;
   bestInd: individual[];
   numOfBestToKeep:number;
   numCurrentGeneration: number;
   generations: any[];
   couplesSelectionMode: string;
-  enableElitism: string[];
+  checkBoxSelectedItens: string[];
   numOfIndividualsInTourney: number;
   numOfElitismInd: number;
 
@@ -61,7 +62,7 @@ export class ConfigPainelComponent implements OnInit {
     this.initGensDataset();
     this.drawFunction();
     this.couplesSelectionMode = "Roleta"
-    this.enableElitism = ["elitism"];
+    this.checkBoxSelectedItens = ["elitism"];
     this.numOfIndividualsInTourney = 4;
     this.numOfElitismInd = 2;
     
@@ -74,7 +75,7 @@ export class ConfigPainelComponent implements OnInit {
   numOfNewIndividual()
   {
     let numOfNewIndividual: number;
-    if(this.enableElitism)
+    if(this.checkBoxSelectedItens.indexOf("elitism") >= 0)
     {
       numOfNewIndividual = this.populationSize - this.numOfElitismInd;
     }
@@ -101,7 +102,8 @@ export class ConfigPainelComponent implements OnInit {
     this.xRealValues = this.getIntervalLabels();
     this.yRealValues = this.xRealValues.map(this.functionToAnalise);
     this.minFunctionInTheInterval = this.minArray(this.yRealValues);
-    console.log("minFunctionInTheInterval" + this.minFunctionInTheInterval);
+    this.maxFunctionInTheInterval = this.maxArray(this.yRealValues);
+    //console.log("minFunctionInTheInterval" + this.minFunctionInTheInterval);
 
   }
 
@@ -110,9 +112,21 @@ export class ConfigPainelComponent implements OnInit {
     let minValue = arr[0];
     for (let index = 1; index < arr.length; index++) 
     {
-      if(minValue < arr[index]) minValue = arr[index];   
+      ///se o minValue é mario que o elemento do array, então ele não o menor e deve ser trocado
+      if(minValue > arr[index]) minValue = arr[index];   
     }
+    console.log(minValue);
     return minValue;
+  }
+
+  maxArray(arr: number[])
+  {
+    let maxValue = arr[0];
+    for (let index = 1; index < arr.length; index++) 
+    {
+      if(maxValue < arr[index]) maxValue = arr[index];   
+    }
+    return maxValue;
   }
 
   getColorStr()
@@ -271,7 +285,7 @@ export class ConfigPainelComponent implements OnInit {
       //console.log(currentGeneration);
       let nextGeneration: individual[] = [];
       let individualsToKeep: individual[] = [];
-      if(this.enableElitism)
+      if(this.checkBoxSelectedItens.indexOf("elitism") >= 0)
       {
         if(this.numCurrentGeneration<2) console.log("enableElitism");
         individualsToKeep = this.bestIndividualsFromAscendingPop(currentGeneration, this.numOfElitismInd);
@@ -666,7 +680,10 @@ export class ConfigPainelComponent implements OnInit {
     //return - this.functionToAnalise(realNumber);
 
     ///trab 03 funcion
-    return this.functionToAnalise(realNumber) + this.minFunctionInTheInterval;
+    return this.functionToAnalise(realNumber) + (- this.minFunctionInTheInterval);
+    
+    ///considering 0 to 1
+    //return (this.functionToAnalise(realNumber) + (- this.minFunctionInTheInterval)) / (this.maxFunctionInTheInterval - this.minFunctionInTheInterval);
   }
 
   functionToAnalise(x: number): number
