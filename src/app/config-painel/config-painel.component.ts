@@ -49,7 +49,7 @@ export class ConfigPainelComponent implements OnInit {
     this.probMutacao = 0.01;
     this.resolution = 10;
     this.populationSize = 50;
-    this.intervalMax = 512;
+    this.intervalMax = 3;
     this.intervalMin = 0;
     this.maxNumOfGenerations = 70;
     this.bestInd = [];
@@ -686,23 +686,23 @@ export class ConfigPainelComponent implements OnInit {
     ///trab 02 funcion
     /// fitness was set as -f+c, since -f grows when f is minimized
     //return - this.functionToAnalise(realNumber) + 400;
-    return - this.functionToAnalise(realNumber);
+    //return - this.functionToAnalise(realNumber);
 
     ///trab 03 funcion
     //return this.functionToAnalise(realNumber) + -this.minFunctionInTheInterval;
     
     ///considering 0 to 1
-    //return (this.functionToAnalise(realNumber) + (- this.minFunctionInTheInterval)) / (this.maxFunctionInTheInterval - this.minFunctionInTheInterval);
+    return (this.functionToAnalise(realNumber) + (- this.minFunctionInTheInterval)) / (this.maxFunctionInTheInterval - this.minFunctionInTheInterval);
   }
 
   functionToAnalise(x: number): number 
   {
     ///trab 02 funcion
-    return - Math.abs(x * Math.sin(Math.sqrt(Math.abs(x)) ));
+    //return - Math.abs(x * Math.sin(Math.sqrt(Math.abs(x)) ));
 
     ///trab 03 funcion
     ///to graph calculator - x * sin(x^4) + cos(x^2)
-    //return x * Math.sin(Math.pow(x, 4)) + Math.cos(Math.pow(x, 2));
+    return x * Math.sin(Math.pow(x, 4)) + Math.cos(Math.pow(x, 2));
   }
 
   binArrayToDecimal(bits: number[]) 
