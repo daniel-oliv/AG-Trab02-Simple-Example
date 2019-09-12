@@ -79,13 +79,13 @@ export class ConfigPainelComponent implements OnInit {
     {
       numOfNewIndividual = this.populationSize;
     }
-    console.log("numOfElitismInd" + numOfNewIndividual);
+
     return numOfNewIndividual;
   }
 
   initGensDataset() 
   {
-    console.log("initGensDataset");
+    //console.log("initGensDataset");
     this.initIntervalData();
     this.generationsDataSets = [];
     this.color = 0;
@@ -94,7 +94,7 @@ export class ConfigPainelComponent implements OnInit {
 
   initIntervalData() 
   {
-    console.log("initIntervalData");
+    //console.log("initIntervalData");
     this.xRealValues = this.getIntervalLabels();
     this.yRealValues = this.xRealValues.map(this.functionToAnalise);
     this.minFunctionInTheInterval = this.minArray(this.yRealValues);
@@ -110,7 +110,6 @@ export class ConfigPainelComponent implements OnInit {
       ///se o minValue é mario que o elemento do array, então ele não o menor e deve ser trocado
       if (minValue > arr[index]) minValue = arr[index];
     }
-    console.log(minValue);
     return minValue;
   }
 
@@ -164,13 +163,13 @@ export class ConfigPainelComponent implements OnInit {
   plotPerformanceGraph(generations: individual[][]) 
   {
     ///filling a vector with the generation numbers
-    console.log("plotPerformanceGraph");
+    //console.log("plotPerformanceGraph");
     let xValues = [];
     for (let i = 0; i <= this.maxNumOfGenerations; i++) {
       xValues.push(i);
     }
-    console.log("xValues");
-    console.log(xValues);
+    //console.log("xValues");
+    //console.log(xValues);
     ///filling data (y values - best individuals fitness and average for every generation)
     let datasets: any[] = [];
     let bestIndividualFitnessDataset = {
@@ -185,12 +184,12 @@ export class ConfigPainelComponent implements OnInit {
       pointHoverRadius: 5
       //showLine: false // no line shown
     };
-    console.log("generations");
-    console.log(
+    //console.log("generations");
+    /* console.log(
       generations.map(element => {
         return this.bestIndividualFromAscendingPop(element).fitness;
       })
-    );
+    ); */
 
     let averageFitnessDataset = {
       label: "Average fitness",
@@ -689,10 +688,11 @@ export class ConfigPainelComponent implements OnInit {
     //return - this.functionToAnalise(realNumber);
 
     ///trab 03 funcion
-    //return this.functionToAnalise(realNumber) + -this.minFunctionInTheInterval;
+    //return this.functionToAnalise(realNumber) - this.minFunctionInTheInterval;
     
     ///considering 0 to 1
-    return (this.functionToAnalise(realNumber) + (- this.minFunctionInTheInterval)) / (this.maxFunctionInTheInterval - this.minFunctionInTheInterval);
+    /// and that minFunctionInTheInterval is a negative number
+    return (this.functionToAnalise(realNumber) - this.minFunctionInTheInterval) / (this.maxFunctionInTheInterval - this.minFunctionInTheInterval);
   }
 
   functionToAnalise(x: number): number 
