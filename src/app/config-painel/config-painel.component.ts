@@ -141,11 +141,11 @@ export class ConfigPainelComponent implements OnInit {
     this.functionDataSet = {
       label: "Fuction f(x)",
       data: this.yRealValues,
-      backgroundColor: "#000000",
+      //backgroundColor: "#000000",
       borderColor: "#000000",
       pointRadius: 0,
       pointHoverRadius: 0,
-      fill: false
+      fill: true
       // showLine: false // no line shown
     };
     let datasets: any[] = [];
@@ -180,8 +180,8 @@ export class ConfigPainelComponent implements OnInit {
       backgroundColor: undefined,
       borderColor: "#000000",
       fill: false,
-      pointRadius: 5,
-      pointHoverRadius: 5
+      pointRadius: 2,
+      pointHoverRadius: 2
       //showLine: false // no line shown
     };
     //console.log("generations");
