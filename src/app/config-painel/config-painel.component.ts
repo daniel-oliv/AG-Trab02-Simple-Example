@@ -51,7 +51,9 @@ export class ConfigPainelComponent implements OnInit {
 
     this.probCruzamento = 0.6;
     this.probMutacao = 0.01;
+    this.numOfVariables = 2;
     this.resolution = 10;
+    console.log("totalResolution: ", this.totalResolution);
     this.populationSize = 50;
     
     let x1Config: VarConfiguration = {
@@ -65,7 +67,7 @@ export class ConfigPainelComponent implements OnInit {
       intervalMin: 4.1,
       intervalMax: 5.8
     }
-    this.numOfVariables = 2;
+    ///update numOfVariables
     this.varConfigurations = [x1Config, x2Config];
 
     this.maxNumOfGenerations = 70;
@@ -129,7 +131,9 @@ export class ConfigPainelComponent implements OnInit {
 
     this.minFunctionInTheInterval = this.minMatrix(this.zRealValues);
     this.maxFunctionInTheInterval = this.maxMatrix(this.zRealValues);
-    //console.log("minFunctionInTheInterval" + this.minFunctionInTheInterval);
+    //console.log("zRealValues: ", this.zRealValues);
+    console.log("minFunctionInTheInterval" + this.minFunctionInTheInterval);
+    console.log("maxFunctionInTheInterval" + this.maxFunctionInTheInterval);
   }
 
   minMatrix(matrix: number[][]) 
@@ -373,13 +377,13 @@ export class ConfigPainelComponent implements OnInit {
     }///while
 
     ///updating graphs
-    this.generationsDataSets = this.getDataSetGeneration(this.generations);
-    for (let i = 0; i < this.generations.length; i++) 
-    {
-      setTimeout(() => {
-        this.drawFunction(this.generationsDataSets.slice(i, i + 1));
-      }, i * 2);
-    }
+    ///////this.generationsDataSets = this.getDataSetGeneration(this.generations);
+    ///////for (let i = 0; i < this.generations.length; i++) 
+    ///////{
+    ///////  setTimeout(() => {
+    ///////    this.drawFunction(this.generationsDataSets.slice(i, i + 1));
+    ///////  }, i * 2);
+    ///////}
     this.plotPerformanceGraph(this.generations);
     //this.generationsDataSets.push(this.getDataSetGeneration(this.generations[0]));
 
@@ -567,24 +571,29 @@ export class ConfigPainelComponent implements OnInit {
 
     ///Math.floor(Math.random()*(this.resolution - 1)) 0 to 8 - +=1 1 to 9
     let indexToCross: number =
-      Math.floor(Math.random() * (this.resolution - 1)) + 1; /// 1 to 9 (pos entre os bits)
+      Math.floor(Math.random() * (this.totalResolution - 1)) + 1; /// 1 to 9 (pos entre os bits)
     //console.log("crossIndividuals indexToCross: " + indexToCross);
 
     newChromosome = couple[0].chromosome
       .slice(0, indexToCross)
-      .concat(couple[1].chromosome.slice(indexToCross, this.resolution));
+      .concat(couple[1].chromosome.slice(indexToCross, this.totalResolution));
     let ind1: individual = this.getIndividual(newChromosome);
     newIndividuals.push(ind1);
     //console.log("crossIndividuals ind1: " + ind1.chromosome);
 
     newChromosome = couple[1].chromosome
       .slice(0, indexToCross)
-      .concat(couple[0].chromosome.slice(indexToCross, this.resolution));
+      .concat(couple[0].chromosome.slice(indexToCross, this.totalResolution));
     let ind2: individual = this.getIndividual(newChromosome);
     newIndividuals.push(ind2);
     //console.log("crossIndividuals ind2: " + ind2.chromosome);
 
     return newIndividuals;
+  }
+
+  get totalResolution(): number
+  {
+    return this.resolution * this.numOfVariables;
   }
 
   applyMutation(population: individual[]) 
@@ -630,6 +639,7 @@ export class ConfigPainelComponent implements OnInit {
   getIntervalLabels(varConfig: VarConfiguration) 
   {
     console.log("getIntervalLabels: ", varConfig);
+    console.log("granularity: ", ((varConfig.intervalMax - varConfig.intervalMin) / this.getDecimalMax()));
     let xValues: number[] = [];
     for (let i = 0; i < this.getDecimalMax(); i++)
       xValues.push(this.wholeToReal(i, varConfig.intervalMin, varConfig.intervalMax));
@@ -645,7 +655,7 @@ export class ConfigPainelComponent implements OnInit {
       //console.log("selectInitialPopulation: " + i);
       currentGeneration.push(
         ///note that we passe the bigChromossome size 2 * 10bits = 20bits 
-        this.getIndividual(this.getRandomChromosome(this.resolution * this.varConfigurations.length))
+        this.getIndividual(this.getRandomChromosome(this.totalResolution))
       );
     }
 
@@ -666,6 +676,7 @@ export class ConfigPainelComponent implements OnInit {
     //console.log("getIndividual");
     let ind: individual = {  };
     ind.chromosome = bigChromosome;
+    ind.variables = [];
     let chromosomes = this.splitArray(bigChromosome, this.varConfigurations.length);
     for(const varIndex in this.varConfigurations)
     {
@@ -681,13 +692,18 @@ export class ConfigPainelComponent implements OnInit {
     return ind;
   }
 
-  splitArray(array:any [], numOfNewArrays: number)
+  splitArray(array:any [], numOfNewArrays: number): any []
   {
-    let arrays: any [];
+    // console.log("splitArray big array", array);
+    // console.log("splitArray numOfNewArrays", numOfNewArrays);
+
+    let arrays: any [] = [];
     let sizeNewArrays = array.length / numOfNewArrays;
+
     for (let index = 0; index < numOfNewArrays; index++) {
       arrays.push(array.slice((index * sizeNewArrays), ((index+1) * sizeNewArrays)));
     }
+    return arrays;
   }
 
   evaluateIndividual(indiv: individual) 
@@ -773,7 +789,7 @@ export class ConfigPainelComponent implements OnInit {
   functionToAnalise(variables: Variable[]): number 
   {
     const x1: number = variables[0].realNumber;
-    const x2: number = variables[0].realNumber;
+    const x2: number = variables[1].realNumber;
     return this.functionToAnaliseNuns(x1, x2);
   }
 
@@ -788,10 +804,15 @@ export class ConfigPainelComponent implements OnInit {
     //return x * Math.sin(Math.pow(x, 4)) + Math.cos(Math.pow(x, 2));
 
     ///trab 04 function
+    ///21.5+x* sin(4 * Math.PI * x1) + x2 * Math.sin(20 * Math.PI * x2)
+    ///21.5+x*sin(4 *pi*x)+y*sin(20*pi*y)
+    ///https://academo.org/demos/3d-surface-plotter/?expression=21.5%2Bx*sin(4*pi*x)%2By*sin(20*pi*y)&xRange=-3.1%2C+12.1&yRange=4.1%2C+5.8&resolution=25
+    ///=21.5+A2*SIN(4 *PI()*A2)+B2*SIN(20*PI()*B2)
+    ///=21,5+A2*SIN(4 *PI()*A2)+B2*SIN(20*PI()*B2)
     return 21.5 + x1 * Math.sin(4 * Math.PI * x1) + x2 * Math.sin(20 * Math.PI * x2);
   }
 
-  binArrayToDecimal(bits: number[]) 
+  binArrayToDecimal(bits: number[])   
   {
     let decimalValue = 0;
     for (let i = 0; i < bits.length; i++)
@@ -811,7 +832,7 @@ export class ConfigPainelComponent implements OnInit {
     return realNumber;
   }
 
-  getDecimalMax() 
+  getDecimalMax() /// be careful changing resolution
   {
     return Math.pow(2, this.resolution);
   }

@@ -111,15 +111,17 @@
 			<p-table [value]="bestInd" class="table table-dark">
 					<ng-template pTemplate="header">
 						<tr>
-							<th>x</th>
-							<th>f(x)</th>
+							<th>x1</th>
+							<th>x2</th>
+							<th>f(x1, x2)</th>
 							<th>Generation</th>
 						</tr>
 					</ng-template>
 					<ng-template pTemplate="body" let-indiv>
 						<tr>
-							<td>{{indiv.realNumber}}</td>
-							<td>{{functionToAnalise(indiv.realNumber)}}</td>
+							<td>{{indiv.variables[0].realNumber}}</td>
+							<td>{{indiv.variables[1].realNumber}}</td>
+							<td>{{functionToAnalise(indiv.variables)}}</td>
 							<td>{{indiv.generation}}</td>
 						</tr>
 					</ng-template>
