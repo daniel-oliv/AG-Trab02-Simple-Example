@@ -20,7 +20,7 @@
 				<br>
 				<h6>Resolução: {{resolution}}</h6>
 				<p-slider class="slider" [(ngModel)]="resolution" 
-				[step]="1" [min]="5" [max]="20" 
+				[step]="2" [min]="5" [max]="20" 
 				[animate]="true" ></p-slider>
 				<br>
 				<h6>Tamanho da população: {{populationSize}}</h6>
@@ -36,13 +36,13 @@
 					<h6>Limite máximo do intervalo: {{variable.intervalMax}}</h6>
 					<p-slider class="slider" [(ngModel)]="variable.intervalMax" 
 					(onChange)="drawFunction()"
-					[step]="1" [min]="variable.intervalMin" [max]="1000"
+					[step]="0.1" [min]="variable.intervalMin" [max]="50"
 					[animate]="true" ></p-slider>
 					<br>
 					<h6>Limite mínimo do intervalo: {{variable.intervalMin}}</h6>
 					<p-slider class="slider" [(ngModel)]="variable.intervalMin" 
 					(onChange)="drawFunction()"
-					[step]="1" [min]="-1000" [max]="variable.intervalMax"
+					[step]="0.1" [min]="-50" [max]="variable.intervalMax"
 					[animate]="true" ></p-slider>
 					<br>
 
