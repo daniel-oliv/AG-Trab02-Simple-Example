@@ -1,6 +1,7 @@
-import { Component, OnInit, ɵConsole } from "@angular/core";
-import { THIS_EXPR } from "@angular/compiler/src/output/output_ast";
-import { element } from "protractor";
+import { Component, OnInit } from "@angular/core";
+
+declare var Plotly: any;
+
 
 @Component({
   selector: "app-config-painel",
@@ -16,6 +17,9 @@ export class ConfigPainelComponent implements OnInit {
   varConfigurations: VarConfiguration[];
   numOfVariables: number;
 
+  x1GraphValues: number[];
+  x2GraphValues: number[];
+
   ///min and max of f(x1, x2)
   minFunctionInTheInterval: number;
   maxFunctionInTheInterval: number;
@@ -30,11 +34,15 @@ export class ConfigPainelComponent implements OnInit {
   numOfIndividualsInTourney: number;
   numOfElitismInd: number;
 
-  graphData: any;
-  functionDataSet: any;
-  generationsDataSets: any[];
+  //graphData: any;
+  //functionDataSet: any;
+  //generationsDataSets: any[];
 
-  zRealValues: number[][];
+  trace3D: any;
+  layout3D: any;
+
+  //zRealValues: number[][];
+  zRealValuesVec: number[];
   colors: string[];
   color: number;
   isGraphResponsive: boolean;
@@ -79,7 +87,8 @@ export class ConfigPainelComponent implements OnInit {
     this.showGraph1 = 'block';
     this.showGraph2 = 'none';
     this.initGensDataset();
-    ///////this.drawFunction();
+    console.log("anestes adasda ");
+    this.drawFunction();
     this.couplesSelectionMode = "Roleta";
     this.checkBoxSelectedItens = ["elitism"];
     this.numOfIndividualsInTourney = 4;
@@ -106,7 +115,7 @@ export class ConfigPainelComponent implements OnInit {
   {
     //console.log("initGensDataset");
     this.initIntervalData();
-    this.generationsDataSets = [];
+    ///////this.generationsDataSets = [];
     this.color = 0;
     this.colors = [];
   }
@@ -114,23 +123,33 @@ export class ConfigPainelComponent implements OnInit {
   initIntervalData() 
   {
     //console.log("initIntervalData");
-    this.zRealValues = [];
+    // this.zRealValues = [];
+    this.zRealValuesVec = [];
+    this.x1GraphValues = [];
+    this.x2GraphValues = [];
     for (let varConfig of this.varConfigurations) {
       this.getIntervalLabels(varConfig)
     }
 
-    for (const x1 of this.varConfigurations[0].xRealValues) 
+    for (let ix1=0; ix1<this.varConfigurations[0].xRealValues.length; ix1+=25) 
     {
-      let x1Const = [];
-      for (const x2 of this.varConfigurations[1].xRealValues)
+      let x1 = this.varConfigurations[0].xRealValues[ix1];
+      for (let ix2=0; ix2<this.varConfigurations[1].xRealValues.length; ix2+=25)
       {
-        x1Const.push(this.functionToAnaliseNuns(x1, x2));
+        let x2 = this.varConfigurations[1].xRealValues[ix2];
+        this.x1GraphValues.push(x1);
+        this.x2GraphValues.push(x2);
+        //x1Const.push(this.functionToAnaliseNuns(x1, x2));
+        this.zRealValuesVec.push(this.functionToAnaliseNuns(x1, x2));
       }
-      this.zRealValues.push(x1Const);
+      // this.zRealValues.push(x1Const);
     }
+    console.log(this.x1GraphValues);
 
-    this.minFunctionInTheInterval = this.minMatrix(this.zRealValues);
-    this.maxFunctionInTheInterval = this.maxMatrix(this.zRealValues);
+    //this.minFunctionInTheInterval = this.minMatrix(this.zRealValues);
+    //this.maxFunctionInTheInterval = this.maxMatrix(this.zRealValues);
+    this.minFunctionInTheInterval = this.minArray(this.zRealValuesVec);
+    this.maxFunctionInTheInterval = this.maxArray(this.zRealValuesVec);
     //console.log("zRealValues: ", this.zRealValues);
     console.log("minFunctionInTheInterval" + this.minFunctionInTheInterval);
     console.log("maxFunctionInTheInterval" + this.maxFunctionInTheInterval);
@@ -193,31 +212,67 @@ export class ConfigPainelComponent implements OnInit {
     );
   }
 
-  drawFunction(aditionalDatasets: any[] = []) 
+  getrandom(num , mul) 
+    {
+       var value = [ ]
+        var i;
+        for(i=0;i<=num;i++)
+       {
+         var rand = Math.random() * mul;
+        value.push(rand);
+       }
+        return value;
+    }
+
+    getFix(num , mul) 
+    {
+       var value = [ ]
+        var i;
+        for(i=0;i<=num;i++)
+       {
+         var rand = 1 * mul;
+        value.push(rand);
+       }
+        return value;
+    }
+
+
+  drawFunction() 
   {
-    //console.log("drawFunction");
+    console.log("drawFunction");
     //console.log(aditionalDatasets);
     this.initIntervalData();
-    this.functionDataSet = {
-      label: "Fuction f(x)",
-      data: this.zRealValues,
-      //backgroundColor: "#000000",
-      borderColor: "#000000",
-      pointRadius: 0,
-      pointHoverRadius: 0,
-      fill: true
-      // showLine: false // no line shown
+    this.trace3D = 
+    {
+      x: this.x1GraphValues, 
+      y: this.x2GraphValues, 
+      z: this.zRealValuesVec,
+      opacity:0.5,
+      mode: "markers",
+      type: "mesh3d",
+      scene: "scene",
+      name: 'Function f'
     };
-    let datasets: any[] = [];
-    datasets.push(this.functionDataSet);
-    datasets = datasets.concat(aditionalDatasets);
-    //console.log(xValues);
-    //console.log(datasets);
-    this.graphData = {
-      animationEnabled: false, //change to false
-      ///////labels: this.xRealValues,
-      datasets
+
+    this.layout3D = 
+    {
+      scene:{
+          aspectmode:'auto',
+          //aspectmode:'data',
+          //aspectmode:'auto',
+          //aspectmode:'manual',
+          domain:{row:0, column:0}
+      },
+      grid:{
+          pattern: 'independent',
+          rows:0,
+          columns:0
+      }
+  
     };
+    console.log("drawFunction trace", this.trace3D);
+    Plotly.plot('3dGraph', [this.trace3D], this.layout3D, {showSendToCloud:false});
+
   }
 
   plotPerformanceGraph(generations: individual[][]) 
@@ -325,6 +380,7 @@ export class ConfigPainelComponent implements OnInit {
     ///restarting the variables
 
     this.initGensDataset();
+    this.drawFunction();
 
     this.generations = [];
 
