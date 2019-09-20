@@ -12,10 +12,14 @@ export class ConfigPainelComponent implements OnInit {
   probCruzamento: number;
   resolution: number;
   populationSize: number;
-  intervalMax: number;
-  intervalMin: number;
+  
+  varConfigurations: VarConfiguration[];
+  numOfVariables: number;
+
+  ///min and max of f(x1, x2)
   minFunctionInTheInterval: number;
   maxFunctionInTheInterval: number;
+
   maxNumOfGenerations: number;
   bestInd: individual[];
   numOfBestToKeep: number;
@@ -29,8 +33,8 @@ export class ConfigPainelComponent implements OnInit {
   graphData: any;
   functionDataSet: any;
   generationsDataSets: any[];
-  xRealValues: number[];
-  yRealValues: number[];
+
+  zRealValues: number[][];
   colors: string[];
   color: number;
   isGraphResponsive: boolean;
@@ -49,8 +53,21 @@ export class ConfigPainelComponent implements OnInit {
     this.probMutacao = 0.01;
     this.resolution = 10;
     this.populationSize = 50;
-    this.intervalMax = 3;
-    this.intervalMin = 0;
+    
+    let x1Config: VarConfiguration = {
+      name: 'x1',
+      intervalMin: -3.1,
+      intervalMax: 12.1
+    }
+
+    let x2Config: VarConfiguration = {
+      name: 'x2',
+      intervalMin: 4.1,
+      intervalMax: 5.8
+    }
+    this.numOfVariables = 2;
+    this.varConfigurations = [x1Config, x2Config];
+
     this.maxNumOfGenerations = 70;
     this.bestInd = [];
     this.numOfBestToKeep = 5;
@@ -60,7 +77,7 @@ export class ConfigPainelComponent implements OnInit {
     this.showGraph1 = 'block';
     this.showGraph2 = 'none';
     this.initGensDataset();
-    this.drawFunction();
+    ///////this.drawFunction();
     this.couplesSelectionMode = "Roleta";
     this.checkBoxSelectedItens = ["elitism"];
     this.numOfIndividualsInTourney = 4;
@@ -95,11 +112,37 @@ export class ConfigPainelComponent implements OnInit {
   initIntervalData() 
   {
     //console.log("initIntervalData");
-    this.xRealValues = this.getIntervalLabels();
-    this.yRealValues = this.xRealValues.map(this.functionToAnalise);
-    this.minFunctionInTheInterval = this.minArray(this.yRealValues);
-    this.maxFunctionInTheInterval = this.maxArray(this.yRealValues);
+    this.zRealValues = [];
+    for (let varConfig of this.varConfigurations) {
+      this.getIntervalLabels(varConfig)
+    }
+
+    for (const x1 of this.varConfigurations[0].xRealValues) 
+    {
+      let x1Const = [];
+      for (const x2 of this.varConfigurations[1].xRealValues)
+      {
+        x1Const.push(this.functionToAnaliseNuns(x1, x2));
+      }
+      this.zRealValues.push(x1Const);
+    }
+
+    this.minFunctionInTheInterval = this.minMatrix(this.zRealValues);
+    this.maxFunctionInTheInterval = this.maxMatrix(this.zRealValues);
     //console.log("minFunctionInTheInterval" + this.minFunctionInTheInterval);
+  }
+
+  minMatrix(matrix: number[][]) 
+  {
+    let minValue = matrix[0][0];
+    for (let x1Index = 1; x1Index < matrix.length; x1Index++) 
+    {
+      for (let x2Index = 1; x2Index < matrix[x1Index].length; x2Index++) 
+      {
+        if (minValue > matrix[x1Index][x2Index]) minValue = matrix[x1Index][x2Index];
+      } 
+    }
+    return minValue;
   }
 
   minArray(arr: number[]) 
@@ -111,6 +154,19 @@ export class ConfigPainelComponent implements OnInit {
       if (minValue > arr[index]) minValue = arr[index];
     }
     return minValue;
+  }
+
+  maxMatrix(matrix: number[][]) 
+  {
+    let maxValue = matrix[0][0];
+    for (let x1Index = 1; x1Index < matrix.length; x1Index++) 
+    {
+      for (let x2Index = 1; x2Index < matrix[x1Index].length; x2Index++) 
+      {
+        if (maxValue < matrix[x1Index][x2Index]) maxValue = matrix[x1Index][x2Index];
+      } 
+    }
+    return maxValue;
   }
 
   maxArray(arr: number[]) 
@@ -140,7 +196,7 @@ export class ConfigPainelComponent implements OnInit {
     this.initIntervalData();
     this.functionDataSet = {
       label: "Fuction f(x)",
-      data: this.yRealValues,
+      data: this.zRealValues,
       //backgroundColor: "#000000",
       borderColor: "#000000",
       pointRadius: 0,
@@ -155,7 +211,7 @@ export class ConfigPainelComponent implements OnInit {
     //console.log(datasets);
     this.graphData = {
       animationEnabled: false, //change to false
-      labels: this.xRealValues,
+      ///////labels: this.xRealValues,
       datasets
     };
   }
@@ -235,8 +291,8 @@ export class ConfigPainelComponent implements OnInit {
       {
         //console.log("getDataSetGeneration")
         //console.log(indiv);
-        let indivIndex = this.xRealValues.indexOf(indiv.realNumber);
-        data[indivIndex] = this.functionDataSet.data[indivIndex];
+        ///////let indivIndex = this.xRealValues.indexOf(indiv.realNumber);
+        ///////data[indivIndex] = this.functionDataSet.data[indivIndex];
       }
 
       let genDataset = {
@@ -571,13 +627,15 @@ export class ConfigPainelComponent implements OnInit {
     return selectedIndex;
   }
 
-  getIntervalLabels() 
+  getIntervalLabels(varConfig: VarConfiguration) 
   {
+    console.log("getIntervalLabels: ", varConfig);
     let xValues: number[] = [];
     for (let i = 0; i < this.getDecimalMax(); i++)
-      xValues.push(this.wholeToReal(i));
-
-    return xValues;
+      xValues.push(this.wholeToReal(i, varConfig.intervalMin, varConfig.intervalMax));
+    
+      varConfig.xRealValues = xValues;
+    //return xValues;
   }
 
   selectInitialPopulation(): individual[] {
@@ -586,7 +644,8 @@ export class ConfigPainelComponent implements OnInit {
     {
       //console.log("selectInitialPopulation: " + i);
       currentGeneration.push(
-        this.getIndividual(this.getRandomChromosome(this.resolution))
+        ///note that we passe the bigChromossome size 2 * 10bits = 20bits 
+        this.getIndividual(this.getRandomChromosome(this.resolution * this.varConfigurations.length))
       );
     }
 
@@ -603,18 +662,32 @@ export class ConfigPainelComponent implements OnInit {
     return currentGeneration;
   }
 
-  getIndividual(chromosome: number[]): individual {
+  getIndividual(bigChromosome: number[]): individual {
     //console.log("getIndividual");
-    let ind: individual = { chromosome };
-    ind.realNumber = this.wholeToReal(
-      this.binArrayToDecimal(ind.chromosome) + 1
-    );
-    ind.fitness = this.calcFitness(ind.realNumber);
+    let ind: individual = {  };
+    ind.chromosome = bigChromosome;
+    let chromosomes = this.splitArray(bigChromosome, this.varConfigurations.length);
+    for(const varIndex in this.varConfigurations)
+    {
+      let variable: Variable = this.getVariable(chromosomes[varIndex], this.varConfigurations[varIndex]);
+      ind.variables.push(variable)
+    }
+    
+    ind.fitness = this.calcFitness(ind.variables);
 
     ///getting the best individuals
     this.evaluateIndividual(ind);
 
     return ind;
+  }
+
+  splitArray(array:any [], numOfNewArrays: number)
+  {
+    let arrays: any [];
+    let sizeNewArrays = array.length / numOfNewArrays;
+    for (let index = 0; index < numOfNewArrays; index++) {
+      arrays.push(array.slice((index * sizeNewArrays), ((index+1) * sizeNewArrays)));
+    }
   }
 
   evaluateIndividual(indiv: individual) 
@@ -662,9 +735,11 @@ export class ConfigPainelComponent implements OnInit {
   hasIndividual(indiv: individual) 
   {
     let containsInd = false;
-    this.bestInd.forEach(element => {
-      if (element.realNumber == indiv.realNumber) containsInd = true;
-    });
+    for (const oneOfTheBest of this.bestInd) {
+      if(oneOfTheBest.variables[0].realNumber == indiv.variables[0].realNumber && /////x1 
+         oneOfTheBest.variables[1].realNumber == indiv.variables[1].realNumber )  /////x2
+         return true;
+    }
     return containsInd;
   }
 
@@ -680,7 +755,7 @@ export class ConfigPainelComponent implements OnInit {
     return chromosome;
   }
 
-  calcFitness(realNumber: number) 
+  calcFitness(variables: Variable[]) 
   {
     ///trab 02 funcion
     /// fitness was set as -f+c, since -f grows when f is minimized
@@ -692,17 +767,28 @@ export class ConfigPainelComponent implements OnInit {
     
     ///considering 0 to 1
     /// and that minFunctionInTheInterval is a negative number
-    return (this.functionToAnalise(realNumber) - this.minFunctionInTheInterval) / (this.maxFunctionInTheInterval - this.minFunctionInTheInterval);
+    return (this.functionToAnalise(variables) - this.minFunctionInTheInterval) / (this.maxFunctionInTheInterval - this.minFunctionInTheInterval);
   }
 
-  functionToAnalise(x: number): number 
+  functionToAnalise(variables: Variable[]): number 
   {
-    ///trab 02 funcion
+    const x1: number = variables[0].realNumber;
+    const x2: number = variables[0].realNumber;
+    return this.functionToAnaliseNuns(x1, x2);
+  }
+
+  functionToAnaliseNuns(x1: number, x2: number): number 
+  {
+    
+    ///trab 02 function
     //return - Math.abs(x * Math.sin(Math.sqrt(Math.abs(x)) ));
 
-    ///trab 03 funcion
+    ///trab 03 function
     ///to graph calculator - x * sin(x^4) + cos(x^2)
-    return x * Math.sin(Math.pow(x, 4)) + Math.cos(Math.pow(x, 2));
+    //return x * Math.sin(Math.pow(x, 4)) + Math.cos(Math.pow(x, 2));
+
+    ///trab 04 function
+    return 21.5 + x1 * Math.sin(4 * Math.PI * x1) + x2 * Math.sin(20 * Math.PI * x2);
   }
 
   binArrayToDecimal(bits: number[]) 
@@ -715,13 +801,11 @@ export class ConfigPainelComponent implements OnInit {
     return decimalValue;
   }
 
-  wholeToReal(decimalWhole: number) 
+  wholeToReal(decimalWhole: number, intervalMin, intervalMax) 
   {
     /// number=1:1024
     let realNumber =
-      (decimalWhole * (this.intervalMax - this.intervalMin)) /
-        this.getDecimalMax() +
-      this.intervalMin;
+      (decimalWhole * (intervalMax - intervalMin)) / this.getDecimalMax() + intervalMin;
 
     //console.log("wholeToReal: real " + realNumber + " whole " + decimalWhole);
     return realNumber;
@@ -741,18 +825,43 @@ export class ConfigPainelComponent implements OnInit {
     return averageFit;
   }
 
+  getVariable(chromosome: number[], varConfig: VarConfiguration): Variable
+  {
+    let variable: Variable = { chromosome };
+    variable.realNumber = this.wholeToReal(this.binArrayToDecimal(variable.chromosome) + 1, varConfig.intervalMin, varConfig.intervalMax); 
+    return variable;
+  }
+
   /////////////////////
 }
 
-interface individual {
+
+
+interface Variable {
   chromosome: number[];
 
   ///x real value
   realNumber?: number;
 
+}
+
+interface individual {
+  ///the chromosome representing all the variables
+  chromosome?: number[];
+
+  ///vector containing the x1 and x2 values (real and binary formats)
+  variables?: Variable[];
+  
   ///indicates how much the the individual is good (generally is f(x)+c)
   fitness?: number;
 
   ///generation number
   generation?: number;
+}
+
+interface VarConfiguration{
+  name: string;
+  intervalMin: number;
+  intervalMax: number;
+  xRealValues?: number[];
 }

@@ -27,19 +27,30 @@
 				<p-slider class="slider" [(ngModel)]="populationSize" 
 				[step]="2" [min]="2" [max]="100"
 				[animate]="true" ></p-slider>
+				
 				<br>
-				<h6>Limite máximo do intervalo: {{intervalMax}}</h6>
-				<p-slider class="slider" [(ngModel)]="intervalMax" 
-				(onChange)="drawFunction()"
-				[step]="1" [min]="intervalMin" [max]="1000"
-				[animate]="true" ></p-slider>
 				<br>
-				<h6>Limite mínimo do intervalo: {{intervalMin}}</h6>
-				<p-slider class="slider" [(ngModel)]="intervalMin" 
-				(onChange)="drawFunction()"
-				[step]="1" [min]="-1000" [max]="intervalMax"
-				[animate]="true" ></p-slider>
 				<br>
+				<div *ngFor="let variable of varConfigurations">
+					<h6>Variável: {{variable.name}}</h6>
+					<h6>Limite máximo do intervalo: {{variable.intervalMax}}</h6>
+					<p-slider class="slider" [(ngModel)]="variable.intervalMax" 
+					(onChange)="drawFunction()"
+					[step]="1" [min]="variable.intervalMin" [max]="1000"
+					[animate]="true" ></p-slider>
+					<br>
+					<h6>Limite mínimo do intervalo: {{variable.intervalMin}}</h6>
+					<p-slider class="slider" [(ngModel)]="variable.intervalMin" 
+					(onChange)="drawFunction()"
+					[step]="1" [min]="-1000" [max]="variable.intervalMax"
+					[animate]="true" ></p-slider>
+					<br>
+
+				</div>
+				<br><br><br>
+
+
+				
 				<h6>Número de gerações: {{maxNumOfGenerations}}</h6>
 				<p-slider class="slider" [(ngModel)]="maxNumOfGenerations" 
 				[step]="1" [min]="0" [max]="200" 
