@@ -33,6 +33,7 @@ export class ConfigPainelComponent implements OnInit {
   checkBoxSelectedItens: string[];
   numOfIndividualsInTourney: number;
   numOfElitismInd: number;
+  numOfCuts: number;
 
   //graphData: any;
   //functionDataSet: any;
@@ -43,6 +44,7 @@ export class ConfigPainelComponent implements OnInit {
 
   //zRealValues: number[][];
   zRealValuesVec: number[];
+  zRealValuesGraph: number[];
   colors: string[];
   color: number;
   isGraphResponsive: boolean;
@@ -63,6 +65,7 @@ export class ConfigPainelComponent implements OnInit {
     this.resolution = 10;
     console.log("totalResolution: ", this.totalResolution);
     this.populationSize = 50;
+    this.numOfCuts = 1;
     
     let x1Config: VarConfiguration = {
       name: 'x1',
@@ -86,8 +89,7 @@ export class ConfigPainelComponent implements OnInit {
     this.isGraphResponsive = true;
     this.showGraph1 = 'block';
     this.showGraph2 = 'none';
-    this.initGensDataset();
-    console.log("anestes adasda ");
+    //this.initGensDataset();
     this.drawFunction();
     this.couplesSelectionMode = "Roleta";
     this.checkBoxSelectedItens = ["elitism"];
@@ -125,6 +127,7 @@ export class ConfigPainelComponent implements OnInit {
     //console.log("initIntervalData");
     // this.zRealValues = [];
     this.zRealValuesVec = [];
+    this.zRealValuesGraph = [];
     this.x1GraphValues = [];
     this.x2GraphValues = [];
     for (let varConfig of this.varConfigurations) {
@@ -140,19 +143,27 @@ export class ConfigPainelComponent implements OnInit {
         this.x1GraphValues.push(x1);
         this.x2GraphValues.push(x2);
         //x1Const.push(this.functionToAnaliseNuns(x1, x2));
-        this.zRealValuesVec.push(this.functionToAnaliseNuns(x1, x2));
+        this.zRealValuesGraph.push(this.functionToAnaliseNuns(x1, x2));
       }
       // this.zRealValues.push(x1Const);
     }
-    console.log(this.x1GraphValues);
+
+    ///for fill the complete zValues vector, since zRealValuesGraph is just for the graph, because it has a smaller resolution
+    for (let x1 of this.varConfigurations[0].xRealValues) 
+    {
+      for (let x2 of this.varConfigurations[1].xRealValues)
+      {
+        this.zRealValuesVec.push(this.functionToAnaliseNuns(x1, x2));
+      }
+    }
 
     //this.minFunctionInTheInterval = this.minMatrix(this.zRealValues);
     //this.maxFunctionInTheInterval = this.maxMatrix(this.zRealValues);
     this.minFunctionInTheInterval = this.minArray(this.zRealValuesVec);
     this.maxFunctionInTheInterval = this.maxArray(this.zRealValuesVec);
     //console.log("zRealValues: ", this.zRealValues);
-    console.log("minFunctionInTheInterval" + this.minFunctionInTheInterval);
-    console.log("maxFunctionInTheInterval" + this.maxFunctionInTheInterval);
+    console.log("minFunctionInTheInterval: " + this.minFunctionInTheInterval);
+    console.log("maxFunctionInTheInterval: " + this.maxFunctionInTheInterval);
   }
 
   minMatrix(matrix: number[][]) 
@@ -212,41 +223,17 @@ export class ConfigPainelComponent implements OnInit {
     );
   }
 
-  getrandom(num , mul) 
-    {
-       var value = [ ]
-        var i;
-        for(i=0;i<=num;i++)
-       {
-         var rand = Math.random() * mul;
-        value.push(rand);
-       }
-        return value;
-    }
-
-    getFix(num , mul) 
-    {
-       var value = [ ]
-        var i;
-        for(i=0;i<=num;i++)
-       {
-         var rand = 1 * mul;
-        value.push(rand);
-       }
-        return value;
-    }
-
-
   drawFunction() 
   {
-    console.log("drawFunction");
+    //console.log("drawFunction");
+    Plotly.purge('3dGraph');
     //console.log(aditionalDatasets);
     this.initIntervalData();
     this.trace3D = 
     {
       x: this.x1GraphValues, 
       y: this.x2GraphValues, 
-      z: this.zRealValuesVec,
+      z: this.zRealValuesGraph,
       opacity:0.5,
       mode: "markers",
       type: "mesh3d",
@@ -270,7 +257,7 @@ export class ConfigPainelComponent implements OnInit {
       }
   
     };
-    console.log("drawFunction trace", this.trace3D);
+    //console.log("drawFunction trace", this.trace3D);
     Plotly.plot('3dGraph', [this.trace3D], this.layout3D, {showSendToCloud:false});
 
   }
@@ -375,11 +362,11 @@ export class ConfigPainelComponent implements OnInit {
 
   optimize() 
   {
-    console.log("optimize");
+    //console.log("optimize");
 
     ///restarting the variables
 
-    this.initGensDataset();
+    //this.initGensDataset();
     this.drawFunction();
 
     this.generations = [];
@@ -620,6 +607,24 @@ export class ConfigPainelComponent implements OnInit {
   }
 
   crossIndividuals(couple: individual[]): individual[] {
+    switch (this.numOfCuts) 
+    {
+      case 1:
+        //console.log("crossIndividuals 1 cut");
+        return this.crossSingleCut(couple);
+        break;
+      case 2:
+        //console.log("crossIndividuals 2 cuts");
+        return this.crossDoubleCut(couple);
+        break;
+      default:
+        //console.log("selectCouples default");
+        return null;
+        break;
+    }
+  }
+
+  crossSingleCut(couple: individual[]): individual[] {
     //console.log("crossIndividuals couple: ");
     //couple.forEach((indiv)=>console.log(indiv.chromosome));
     let newIndividuals: individual[] = [];
@@ -645,6 +650,109 @@ export class ConfigPainelComponent implements OnInit {
     //console.log("crossIndividuals ind2: " + ind2.chromosome);
 
     return newIndividuals;
+  }
+
+  crossDoubleCut(couple: individual[]): individual[] {
+    //console.log("crossIndividuals couple: ");
+    //couple.forEach((indiv)=>console.log(indiv.chromosome));
+    let newIndividuals: individual[] = [];
+    let newChromosome: number[] = [];
+    let indexesToCut: number[] = this.getBalancedIndexesToCut(); 
+    ///Math.floor(Math.random()*(this.resolution - 1)) 0 to 8 - +=1 1 to 9
+
+    newChromosome = 
+              couple[0].chromosome.slice(0, indexesToCut[0])
+      .concat(couple[1].chromosome.slice(indexesToCut[0], indexesToCut[1]))
+      .concat(couple[0].chromosome.slice(indexesToCut[1], this.totalResolution));
+    let ind1: individual = this.getIndividual(newChromosome);
+    newIndividuals.push(ind1);
+    //console.log("crossIndividuals ind1: " + ind1.chromosome);
+
+    newChromosome = 
+              couple[1].chromosome.slice(0, indexesToCut[0])
+      .concat(couple[0].chromosome.slice(indexesToCut[0], indexesToCut[1]))
+      .concat(couple[1].chromosome.slice(indexesToCut[1], this.totalResolution));
+    let ind2: individual = this.getIndividual(newChromosome);
+    newIndividuals.push(ind2);
+    //console.log("crossIndividuals ind2: " + ind2.chromosome);
+
+    return newIndividuals;
+  }
+
+  getAscendingArray(array: number[]): number[]
+  {
+    let ordered: number[]= [];
+    ordered.push(array[0]);
+    ///starting at 1, since we had already added 0th
+    for (let i = 1; i < array.length; i++) 
+    {
+      let insertedIndividual = false;
+      for (let j = 0; j < ordered.length; j++) 
+      {
+        ///if the fitness is less than some already inserted individual's fitness, insert it before
+        if (array[i] < ordered[j]) 
+        {
+          ordered.splice(j, 0, array[i]);
+          insertedIndividual = true;
+          break;
+        }
+      }
+      /// if it was not inserted, push it at the end, since it is the biggest value
+      if (insertedIndividual === false) 
+      {
+        ordered.push(array[i]);
+      }
+    }
+    /*console.log("getAscendingFitnessPopulation");
+    console.log("first");
+    console.log(ordered[0]);
+    console.log("last");
+    console.log(ordered[ordered.length - 1]);*/
+    return ordered;
+  }
+
+  getIndexesToCut(): number[]
+  {
+    let indexesToCut: number[] = []; 
+    let indexToCut: number;
+    while(indexesToCut.length < this.numOfCuts)
+    {
+      indexToCut =
+          Math.floor(Math.random() * (this.totalResolution - 1)) + 1; /// 1 to 19 (pos entre os bits)
+
+      if( !indexesToCut.includes(indexToCut))
+      {
+        //console.log("Contains: " + indexToCut);
+        indexesToCut.push(indexToCut);
+      }
+      
+    }
+    indexesToCut = this.getAscendingArray(indexesToCut)
+    //console.log("indexes: ", indexesToCut);
+    
+    return indexesToCut;
+  }
+
+  ///return one number between 1 and 9 and another between 11 and 19, for being sure of cutting both x1 and x2
+  getBalancedIndexesToCut(): number[]
+  {
+    let indexesToCut: number[] = []; 
+    let indexToCut: number;
+    while(indexesToCut.length < this.numOfCuts)
+    {
+      indexToCut =
+          Math.floor(Math.random() * (this.resolution - 1)) + 1; /// 1 to 9 (pos entre os bits)
+
+      if( !indexesToCut.includes(indexToCut))
+      {
+        //console.log("Contains: " + indexToCut);
+        indexesToCut.push(indexToCut);
+      }
+    }
+    indexesToCut[1] += 10;
+    //console.log("indexes: ", indexesToCut);
+
+    return indexesToCut;
   }
 
   get totalResolution(): number
@@ -694,13 +802,14 @@ export class ConfigPainelComponent implements OnInit {
 
   getIntervalLabels(varConfig: VarConfiguration) 
   {
-    console.log("getIntervalLabels: ", varConfig);
-    console.log("granularity: ", ((varConfig.intervalMax - varConfig.intervalMin) / this.getDecimalMax()));
+    //console.log("getIntervalLabels: ", varConfig);
+    //console.log("granularity: ", ((varConfig.intervalMax - varConfig.intervalMin) / this.getDecimalMax()));
     let xValues: number[] = [];
     for (let i = 0; i < this.getDecimalMax(); i++)
+    {
       xValues.push(this.wholeToReal(i, varConfig.intervalMin, varConfig.intervalMax));
-    
-      varConfig.xRealValues = xValues;
+    }
+    varConfig.xRealValues = xValues;
     //return xValues;
   }
 
