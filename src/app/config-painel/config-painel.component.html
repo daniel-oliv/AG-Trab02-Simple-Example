@@ -83,6 +83,14 @@
 				<p-slider class="slider" [(ngModel)]="numOfElitismInd" 
 				[step]="2" [min]="0" [max]="populationSize" 
 				[animate]="true" ></p-slider>
+				<br>
+				<br>
+				<h6>Número de cortes no crossover: {{numOfCuts}}</h6>
+				<div class="smallSlider">
+				<p-slider class="slider" [(ngModel)]="numOfCuts" 
+				[step]="1" [min]="1" [max]="2" 
+				[animate]="true" ></p-slider>
+				</div>
 
 				<br><br><br>            
 			</div>      
