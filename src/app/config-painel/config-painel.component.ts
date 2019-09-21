@@ -1025,10 +1025,8 @@ export class ConfigPainelComponent implements OnInit {
 
 interface Variable {
   chromosome: number[];
-
   ///x real value
   realNumber?: number;
-
 }
 
 interface individual {
