@@ -9,8 +9,8 @@
 <br><br>
 <p-accordion [multiple]="true">
 	<p-accordionTab header="Configuração">
-		<div class="rootTag">
-			<div class="container slidersContent" >
+		<div class=" row">
+			<div class="container col-sm" >
 				<br>
 				<h6>Probabilidade de Cruzamento: {{probCruzamento|number:'1.2-5'}}</h6>
 				<p-slider class="slider" [(ngModel)]="probCruzamento" 
@@ -52,9 +52,9 @@
 
 				</div>
 				<br><br><br>
-
-
-				
+				</div>
+				<div class="container col-sm-1" ></div>
+				<div class="container col-sm" >
 				<h6>Número de gerações: {{maxNumOfGenerations}}</h6>
 				<p-slider class="slider" [(ngModel)]="maxNumOfGenerations" 
 				[step]="1" [min]="0" [max]="200" 
@@ -95,9 +95,11 @@
 				[step]="1" [min]="1" [max]="2" 
 				[animate]="true" ></p-slider>
 				</div>
+				
 
 				<br><br><br>            
-			</div>      
+			</div>    
+			<div class="container col-sm-1" ></div>  
 		</div>
 	</p-accordionTab>
 	<p-accordionTab header="Function Graph" [selected]="true">
